@@ -1,16 +1,18 @@
 "use client";
 
 import { useParams, notFound } from "next/navigation";
-import { Send } from "lucide-react";
+import { Send, Wand2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { useSendMessage } from "@/hooks/useSendMessage";
+import { useSuggestReply } from "@/hooks/useSuggestReply";
 import { MessageList } from "@/components/chat/message-list";
 import { safeAvatarColor, avatarTextColor, getInitials } from "@/lib/avatar";
 
@@ -31,6 +33,18 @@ export default function ChatPage() {
 
     const sendMutation = useSendMessage(chatId, {
         onSendError: (failedText) => setText(failedText),
+    });
+
+    const aiMutation = useSuggestReply(chatId, {
+        onSuggestion: (suggestion) => {
+            const previous = text;
+            setText(suggestion);
+            toast.success("Sugestão aplicada! Revise antes de enviar.", {
+                action: previous
+                    ? { label: "Desfazer", onClick: () => setText(previous) }
+                    : undefined,
+            });
+        },
     });
 
     const handleSend = (e: React.FormEvent) => {
@@ -113,6 +127,16 @@ export default function ChatPage() {
 
             <div className="p-4 bg-background border-t shrink-0">
                 <form onSubmit={handleSend} className="flex items-center gap-2">
+                    <Button
+                        type="button" variant="outline" size="icon"
+                        onClick={() => aiMutation.mutate()}
+                        disabled={aiMutation.isPending || sendMutation.isPending}
+                        title="Sugerir resposta com IA" aria-label="Sugerir resposta com IA"
+                        className="shrink-0"
+                    >
+                        <Wand2 aria-hidden="true" className={cn("h-4 w-4 text-primary", aiMutation.isPending && "animate-spin")} />
+                    </Button>
+
                     <Input
                         value={text}
                         onChange={(e) => setText(e.target.value)}
