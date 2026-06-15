@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "./providers";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,9 @@ export default function RootLayout({
 }) {
     return (
         <html lang="pt-BR" className={cn("font-sans", geist.variable)}>
-            <body className={geist.className}>{children}</body>
+            <body className={geist.className}>
+                <Providers>{children}</Providers>
+            </body>
         </html>
     );
 }
