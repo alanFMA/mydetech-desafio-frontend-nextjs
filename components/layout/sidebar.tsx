@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
 import { useConversations } from "@/hooks/useConversations";
+import { useMe } from "@/hooks/useMe";
 import { safeAvatarColor, avatarTextColor, getInitials } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ export function Sidebar() {
     const [searchTerm, setSearchTerm] = useState("");
 
     const { data: conversations, isLoading, isError } = useConversations();
+    const { data: me, isLoading: isMeLoading } = useMe();
 
     // Memoizado: evita refiltrar a lista inteira a cada keystroke/poll (PERF-03).
     const filteredConversations = useMemo(() => {
@@ -41,7 +43,16 @@ export function Sidebar() {
         >
             <div className="p-4 border-b flex flex-col gap-3 bg-background shrink-0">
                 <div className="flex items-center justify-between">
-                    <h2 className="font-semibold text-lg">Conversas</h2>
+                    <div className="min-w-0">
+                        <h2 className="font-semibold text-lg">Conversas</h2>
+                        {isMeLoading ? (
+                            <Skeleton className="h-3 w-28 mt-1" />
+                        ) : me ? (
+                            <p className="text-xs text-muted-foreground truncate">
+                                {me.name} · {me.role}
+                            </p>
+                        ) : null}
+                    </div>
                     <ThemeToggle />
                 </div>
                 <div className="relative">
