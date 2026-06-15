@@ -1,17 +1,24 @@
 "use client";
 
 import { useParams, notFound } from "next/navigation";
+import { Send } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
+import { useSendMessage } from "@/hooks/useSendMessage";
 import { MessageList } from "@/components/chat/message-list";
 import { safeAvatarColor, avatarTextColor, getInitials } from "@/lib/avatar";
 
 export default function ChatPage() {
     const params = useParams();
     const chatId = params.id as string;
+
+    const [text, setText] = useState("");
 
     const { data: conversations } = useConversations();
     const currentChat = conversations?.find((c) => c.id === chatId);
@@ -21,6 +28,17 @@ export default function ChatPage() {
     }
 
     const { data: messages, isLoading, isError } = useMessages(chatId);
+
+    const sendMutation = useSendMessage(chatId, {
+        onSendError: (failedText) => setText(failedText),
+    });
+
+    const handleSend = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!text.trim()) return;
+        sendMutation.mutate(text);
+        setText("");
+    };
 
     if (isLoading && !messages) {
         return (
@@ -91,6 +109,28 @@ export default function ChatPage() {
                         Nenhuma mensagem ainda. Diga olá 👋
                     </div>
                 )}
+            </div>
+
+            <div className="p-4 bg-background border-t shrink-0">
+                <form onSubmit={handleSend} className="flex items-center gap-2">
+                    <Input
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        placeholder="Digite sua mensagem..."
+                        aria-label={currentChat ? `Mensagem para ${currentChat.contactName}` : "Mensagem"}
+                        className="flex-1 bg-background"
+                        disabled={sendMutation.isPending}
+                    />
+
+                    <Button
+                        type="submit" size="icon"
+                        disabled={!text.trim() || sendMutation.isPending}
+                        title="Enviar mensagem" aria-label="Enviar mensagem"
+                        className="shrink-0"
+                    >
+                        <Send aria-hidden="true" className="h-4 w-4" />
+                    </Button>
+                </form>
             </div>
         </div>
     );

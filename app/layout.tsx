@@ -5,6 +5,7 @@ import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geist = Geist({
     subsets: ["latin"],
@@ -51,6 +52,7 @@ export default function RootLayout({
                                 {children}
                             </main>
                         </div>
+                        <Toaster richColors position="top-right" />
                     </ThemeProvider>
                 </Providers>
             </body>
