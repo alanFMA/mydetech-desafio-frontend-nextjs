@@ -1,12 +1,12 @@
 "use client";
 
-import { useParams, notFound } from "next/navigation";
-import { Send, Wand2 } from "lucide-react";
+import { useParams, useRouter, notFound } from "next/navigation";
+import { Send, Wand2, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useConversations } from "@/hooks/useConversations";
@@ -16,9 +16,18 @@ import { useSuggestReply } from "@/hooks/useSuggestReply";
 import { MessageList } from "@/components/chat/message-list";
 import { safeAvatarColor, avatarTextColor, getInitials } from "@/lib/avatar";
 
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 export default function ChatPage() {
     const params = useParams();
+    const router = useRouter();
     const chatId = params.id as string;
+
+    const bottomRef = useRef<HTMLDivElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const isFirstLoadRef = useRef(true);
 
     const [text, setText] = useState("");
 
@@ -54,6 +63,37 @@ export default function ChatPage() {
         setText("");
     };
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") router.push("/");
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [router]);
+
+    useIsomorphicLayoutEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container || !messages || messages.length === 0) return;
+
+        if (isFirstLoadRef.current) {
+            container.scrollTop = container.scrollHeight;
+            isFirstLoadRef.current = false;
+            return;
+        }
+
+        const { scrollTop, scrollHeight, clientHeight } = container;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+        const lastIsOutbound = messages[messages.length - 1]?.direction === "out";
+
+        if (isNearBottom || lastIsOutbound) {
+            bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [messages]);
+
+    useEffect(() => {
+        isFirstLoadRef.current = true;
+    }, [chatId]);
+
     if (isLoading && !messages) {
         return (
             <div className="flex-1 flex flex-col p-4 space-y-4" role="status" aria-busy="true" aria-label="Carregando mensagens">
@@ -77,6 +117,14 @@ export default function ChatPage() {
     return (
         <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50 dark:bg-[#0B101A]">
             <div className="h-16 border-b flex items-center px-4 md:px-6 bg-background/95 backdrop-blur z-10 shrink-0 gap-3 shadow-sm">
+                <Button
+                    type="button" variant="ghost" size="icon"
+                    onClick={() => router.push("/")}
+                    title="Voltar para a lista" aria-label="Voltar para a lista de conversas"
+                    className="shrink-0 md:hidden"
+                >
+                    <ArrowLeft aria-hidden="true" className="h-5 w-5" />
+                </Button>
                 {currentChat ? (
                     <>
                         <Avatar className="h-10 w-10 border border-border/50">
@@ -110,11 +158,13 @@ export default function ChatPage() {
             </div>
 
             <div
+                ref={scrollContainerRef}
+                tabIndex={0}
                 role="log"
                 aria-live="polite"
                 aria-relevant="additions"
                 aria-label={currentChat ? `Conversa com ${currentChat.contactName}` : "Histórico de mensagens"}
-                className="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col pb-4"
+                className="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col pb-4 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
                 {messages && messages.length > 0 ? (
                     <MessageList messages={messages} />
@@ -123,6 +173,7 @@ export default function ChatPage() {
                         Nenhuma mensagem ainda. Diga olá 👋
                     </div>
                 )}
+                <div ref={bottomRef} />
             </div>
 
             <div className="p-4 bg-background border-t shrink-0">
@@ -138,6 +189,7 @@ export default function ChatPage() {
                     </Button>
 
                     <Input
+                        ref={inputRef}
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         placeholder="Digite sua mensagem..."
