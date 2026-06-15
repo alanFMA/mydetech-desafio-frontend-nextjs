@@ -1,0 +1,97 @@
+"use client";
+
+import { useParams, notFound } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { useConversations } from "@/hooks/useConversations";
+import { useMessages } from "@/hooks/useMessages";
+import { MessageList } from "@/components/chat/message-list";
+import { safeAvatarColor, avatarTextColor, getInitials } from "@/lib/avatar";
+
+export default function ChatPage() {
+    const params = useParams();
+    const chatId = params.id as string;
+
+    const { data: conversations } = useConversations();
+    const currentChat = conversations?.find((c) => c.id === chatId);
+
+    if (conversations && !currentChat) {
+        notFound();
+    }
+
+    const { data: messages, isLoading, isError } = useMessages(chatId);
+
+    if (isLoading && !messages) {
+        return (
+            <div className="flex-1 flex flex-col p-4 space-y-4" role="status" aria-busy="true" aria-label="Carregando mensagens">
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className={cn("flex", i % 2 === 0 ? "justify-end" : "justify-start")}>
+                        <Skeleton className="h-12 w-1/3 rounded-2xl" />
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="flex-1 flex items-center justify-center text-destructive">
+                Erro ao carregar o histórico de mensagens.
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50 dark:bg-[#0B101A]">
+            <div className="h-16 border-b flex items-center px-4 md:px-6 bg-background/95 backdrop-blur z-10 shrink-0 gap-3 shadow-sm">
+                {currentChat ? (
+                    <>
+                        <Avatar className="h-10 w-10 border border-border/50">
+                            <AvatarFallback
+                                style={{
+                                    backgroundColor: safeAvatarColor(currentChat.avatarColor),
+                                    color: avatarTextColor(currentChat.avatarColor),
+                                }}
+                            >
+                                {getInitials(currentChat.contactName)}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                            <h1 className="font-semibold text-sm leading-tight text-foreground">
+                                {currentChat.contactName}
+                            </h1>
+                            <span className="text-xs text-muted-foreground mt-0.5">
+                                {currentChat.contactPhone}
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex items-center gap-3" role="status" aria-busy="true" aria-label="Carregando contato">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div className="space-y-1">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-3 w-16" />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div
+                role="log"
+                aria-live="polite"
+                aria-relevant="additions"
+                aria-label={currentChat ? `Conversa com ${currentChat.contactName}` : "Histórico de mensagens"}
+                className="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col pb-4"
+            >
+                {messages && messages.length > 0 ? (
+                    <MessageList messages={messages} />
+                ) : (
+                    <div className="flex-1 flex items-center justify-center text-center text-sm text-muted-foreground">
+                        Nenhuma mensagem ainda. Diga olá 👋
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
