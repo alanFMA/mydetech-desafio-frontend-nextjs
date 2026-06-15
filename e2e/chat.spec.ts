@@ -14,13 +14,11 @@ test.describe("Tela de chat", () => {
             .click();
 
         await expect(page).toHaveURL(/\/chat\/c-1001$/);
-        // Header dinâmico (nome em <h1> + telefone), lido do cache de conversas.
         await expect(
             page.getByRole("heading", { name: "Mariana Lopes", level: 1 }),
         ).toBeVisible();
         await expect(page.getByText("5511988887766")).toBeVisible();
 
-        // Região de mensagens acessível (role=log) com as bolhas in/out.
         const log = page.getByRole("log");
         await expect(log).toBeVisible();
         await expect(log.getByText("Bom dia", { exact: true })).toBeVisible();

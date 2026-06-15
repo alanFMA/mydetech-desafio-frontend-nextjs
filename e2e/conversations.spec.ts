@@ -15,14 +15,12 @@ test.describe("Lista de conversas", () => {
         for (const c of conversations) {
             await expect(page.getByText(c.contactName)).toBeVisible();
         }
-        // Badge de não-lidas (Mariana = 3) com texto acessível sr-only.
         const marianaLink = page
             .getByRole("link")
             .filter({ hasText: "Mariana Lopes" });
         await expect(
             marianaLink.getByText("mensagens não lidas"),
         ).toBeAttached();
-        // Juliana (unread 0) não tem badge.
         const julianaLink = page
             .getByRole("link")
             .filter({ hasText: "Juliana Prado" });
@@ -55,7 +53,6 @@ test.describe("Lista de conversas", () => {
     test("exibe skeleton de carregamento", async ({ page }) => {
         await mockApi(page, { delayMs: 1500 });
         await page.goto("/");
-        // Região de status anunciada para leitores de tela enquanto carrega.
         await expect(
             page.getByRole("status", { name: "Carregando conversas" }),
         ).toBeVisible();

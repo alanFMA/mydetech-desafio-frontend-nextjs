@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-/** Fallback para rotas inexistentes — inclui o deep-link de conversa não encontrada (D-06). */
 export default function NotFound() {
     return (
         <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">

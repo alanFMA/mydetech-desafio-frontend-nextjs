@@ -6,8 +6,6 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
-    // `resolvedTheme` reflete o tema efetivo (resolve "system" para light/dark),
-    // evitando que o 1º clique erre a direção quando defaultTheme="system" (D-02).
     const { resolvedTheme, setTheme } = useTheme();
 
     return (

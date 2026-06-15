@@ -11,23 +11,9 @@ interface SendContext {
 }
 
 interface UseSendMessageOptions {
-    /** Chamado quando o envio falha, com o texto original para reidratar o rascunho. */
     onSendError?: (text: string) => void;
 }
 
-/**
- * Envio otimista de mensagem.
- *
- * - `onMutate`: injeta a bolha otimista e tira um snapshot para rollback.
- * - `onError`: faz rollback do cache, devolve o texto ao rascunho e avisa via toast.
- * - `onSuccess`: substitui a bolha otimista pelo objeto real do servidor (D-07),
- *   evitando que o poll de 3s sobrescreva ou duplique a bolha na janela da mutation.
- * - `onSettled`: invalida mensagens e a lista de conversas (D-08), para que
- *   `lastMessage`/`unread` da Sidebar não fiquem stale até o próximo poll.
- *
- * `retry: 0` é intencional: sem `Idempotency-Key` (backend imutável), um retry
- * automático poderia duplicar a mensagem entregue ao cliente.
- */
 export function useSendMessage(
     chatId: string,
     options: UseSendMessageOptions = {},
@@ -72,7 +58,6 @@ export function useSendMessage(
             options.onSendError?.(newMessage);
         },
         onSuccess: (serverMessage, _newMessage, context) => {
-            // Troca a bolha otimista pelo objeto real do servidor (reconciliação determinística).
             queryClient.setQueryData<Message[]>(qk.messages(chatId), (old) =>
                 old
                     ? old.map((m) =>
@@ -83,7 +68,6 @@ export function useSendMessage(
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: qk.messages(chatId) });
-            // Mantém a Sidebar (lastMessage/unread) em sincronia com o envio.
             queryClient.invalidateQueries({ queryKey: qk.conversations });
         },
     });

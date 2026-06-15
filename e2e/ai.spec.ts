@@ -47,7 +47,6 @@ test.describe("Sugestão de IA", () => {
         await page
             .getByRole("button", { name: "Sugerir resposta com IA" })
             .click();
-        // retry: 2 com backoff exponencial (~3s) antes de cair no onError.
         await expect(
             page.getByText("A IA não conseguiu gerar uma sugestão no momento."),
         ).toBeVisible({ timeout: 10_000 });

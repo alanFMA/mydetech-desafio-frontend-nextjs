@@ -1,13 +1,5 @@
 import { Page, Route } from "@playwright/test";
 
-/**
- * Fixtures determinísticas (forma idêntica à da API hospedada) + helper de mock.
- *
- * Os testes E2E interceptam a API via `page.route` em vez de bater no backend
- * real: isso torna os fluxos reprodutíveis offline e permite exercitar estados
- * que a API não entrega sob demanda (erro 5xx, lista vazia, falha de envio).
- */
-
 export const me = {
     id: "agent-1",
     name: "Atendente Myde",
@@ -44,7 +36,6 @@ export const conversations = [
     },
 ];
 
-/** Histórico com mensagens em dois dias distintos (exercita os divisores de data). */
 export const messages: Record<string, unknown[]> = {
     "c-1001": [
         {
@@ -102,37 +93,21 @@ const json = (route: Route, body: unknown, status = 200) =>
     });
 
 export interface MockOptions {
-    /** Atraso (ms) aplicado às respostas GET — útil para capturar skeletons. */
     delayMs?: number;
-    /** Força erro 500 em GET /conversations. */
     conversationsError?: boolean;
-    /** Força erro 500 em GET de mensagens. */
     messagesError?: boolean;
-    /** Força erro 500 em POST de envio. */
     sendError?: boolean;
-    /** Atraso (ms) no POST de envio — para capturar a bolha otimista (⏳). */
     sendDelayMs?: number;
-    /** Força erro 500 em POST /ai/suggest. */
     aiError?: boolean;
-    /** Sobrescreve a lista de conversas (ex.: lista vazia). */
     conversationsOverride?: unknown[];
 }
 
-/**
- * Registra os handlers de rota da API. Chamar ANTES de `page.goto`.
- *
- * Usa um único handler com predicado por `pathname` (robusto a qualquer host —
- * a baseURL do axios é irrelevante) e despacha por rota. Mais previsível que
- * globs, que dependem de semântica de segmentos.
- */
 export async function mockApi(page: Page, opts: MockOptions = {}) {
     const wait = () =>
         opts.delayMs
             ? new Promise((r) => setTimeout(r, opts.delayMs))
             : Promise.resolve();
 
-    // Store mutável por sessão: o POST persiste a mensagem para que o refetch
-    // (poll/invalidate) a inclua, como faria o backend real.
     const store: Record<string, unknown[]> = JSON.parse(
         JSON.stringify(messages),
     );
@@ -142,10 +117,8 @@ export async function mockApi(page: Page, opts: MockOptions = {}) {
         const path = new URL(req.url()).pathname;
         const method = req.method();
 
-        // GET /me
         if (path.endsWith("/me")) return json(route, me);
 
-        // POST/GET /conversations/:id/messages
         const msgMatch = path.match(/\/conversations\/([^/]+)\/messages$/);
         if (msgMatch) {
             const id = msgMatch[1];
@@ -170,7 +143,6 @@ export async function mockApi(page: Page, opts: MockOptions = {}) {
             return json(route, store[id] ?? []);
         }
 
-        // GET /conversations
         if (path.endsWith("/conversations")) {
             await wait();
             if (opts.conversationsError) {
@@ -179,13 +151,11 @@ export async function mockApi(page: Page, opts: MockOptions = {}) {
             return json(route, opts.conversationsOverride ?? conversations);
         }
 
-        // POST /ai/suggest
         if (path.endsWith("/ai/suggest")) {
             if (opts.aiError) return json(route, { error: "boom" }, 500);
             return json(route, aiSuggestion);
         }
 
-        // Demais requisições (assets do Next etc.) seguem normalmente.
         return route.continue();
     });
 }

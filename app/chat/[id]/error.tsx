@@ -3,10 +3,6 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
-/**
- * Error boundary específico da rota de chat: um erro ao renderizar a conversa
- * fica isolado aqui, mantendo a Sidebar (lista de conversas) viva e navegável.
- */
 export default function ChatError({
     error,
     reset,

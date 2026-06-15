@@ -9,7 +9,6 @@ interface MessageListProps {
     messages: Message[];
 }
 
-/** Ícone de status estilo WhatsApp: ✓ enviado · ✓✓ entregue (cinza) · ✓✓ lido (azul). */
 function StatusTicks({
     status,
     optimistic,
@@ -25,11 +24,6 @@ function StatusTicks({
     return <span className="ml-1 tracking-tighter">✓</span>;
 }
 
-/**
- * Lista de bolhas memoizada (D-01): isolada do estado do input para que digitar
- * não re-renderize todas as mensagens a cada tecla. Insere divisores de dia
- * (UX-04) e distingue os três status de entrega (ARCH-05).
- */
 function MessageListImpl({ messages }: MessageListProps) {
     let lastDay = "";
 

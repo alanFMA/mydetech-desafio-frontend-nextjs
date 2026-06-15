@@ -18,7 +18,6 @@ export const metadata: Metadata = {
     description: "Desafio técnico frontend Myde",
 };
 
-// Next 15: themeColor/colorScheme vão no export `viewport`, não em `metadata`.
 export const viewport: Viewport = {
     colorScheme: "light dark",
     themeColor: [

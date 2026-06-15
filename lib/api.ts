@@ -1,23 +1,10 @@
 import axios from "axios";
 
-/**
- * Cliente da API já configurado. Aponta para NEXT_PUBLIC_API_URL (veja .env.example).
- * O backend é fornecido e está hospedado — você NÃO precisa implementá-lo.
- *
- * Rotas disponíveis:
- *   GET  /me
- *   GET  /conversations
- *   GET  /conversations/:id/messages
- *   POST /conversations/:id/messages   { text }
- *   POST /ai/suggest                   { conversationId }
- */
-
 export const api = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000",
     timeout: 20_000,
 });
 
-// ─── Tipos ────────────────────────────────────────────────
 export interface Conversation {
     id: string;
     contactName: string;
@@ -47,7 +34,6 @@ export interface AiSuggestion {
     source: "openai" | "mock" | "mock-fallback";
 }
 
-// ─── Funções ──────────────────────────────────────────────
 export async function getMe(): Promise<Agent> {
     const { data } = await api.get<Agent>("/me");
     return data;

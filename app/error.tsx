@@ -3,10 +3,6 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
-/**
- * Error boundary de segmento (App Router): isola exceções de render que escapem
- * dos tratamentos locais de `isError`, evitando tela branca. Oferece `reset()`.
- */
 export default function Error({
     error,
     reset,
@@ -15,7 +11,6 @@ export default function Error({
     reset: () => void;
 }) {
     useEffect(() => {
-        // Em produção, enviar para um serviço de observabilidade (Sentry etc.).
         console.error(error);
     }, [error]);
 

@@ -1,6 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-/** Loading UI do segmento raiz (streaming do App Router). */
 export default function Loading() {
     return (
         <div

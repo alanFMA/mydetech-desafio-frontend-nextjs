@@ -21,7 +21,6 @@ export function Sidebar() {
     const { data: conversations, isLoading, isError } = useConversations();
     const { data: me, isLoading: isMeLoading } = useMe();
 
-    // Memoizado: evita refiltrar a lista inteira a cada keystroke/poll (PERF-03).
     const filteredConversations = useMemo(() => {
         if (!conversations) return undefined;
         const term = searchTerm.toLowerCase();
@@ -33,8 +32,6 @@ export function Sidebar() {
     const isHome = pathname === "/";
 
     return (
-        // Responsivo: em telas < md a lista ocupa a tela toda na home e some quando
-        // há um chat aberto (a rota controla a view, padrão master→detail mobile).
         <aside
             className={cn(
                 "w-full md:w-80 shrink-0 border-r bg-muted/10 flex-col h-full md:flex",

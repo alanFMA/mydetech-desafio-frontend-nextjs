@@ -1,9 +1,5 @@
 "use client";
 
-/**
- * Fallback do root: substitui o layout inteiro quando o erro ocorre acima dos
- * boundaries de segmento. Precisa renderizar suas próprias tags <html>/<body>.
- */
 export default function GlobalError({
     error,
     reset,

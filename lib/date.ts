@@ -1,6 +1,3 @@
-/** Formatação de datas para o chat (divisores de dia e horário das bolhas). */
-
-/** Rótulo amigável do dia: "Hoje", "Ontem" ou data completa. */
 export function formatDayLabel(iso: string): string {
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return "";
@@ -25,14 +22,12 @@ export function formatDayLabel(iso: string): string {
     });
 }
 
-/** Chave de dia (YYYY-MM-DD) para agrupar mensagens; "" se a data for inválida. */
 export function dayKey(iso: string): string {
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return "";
     return date.toISOString().slice(0, 10);
 }
 
-/** Horário curto (HH:mm); "" se a data for inválida. */
 export function formatTime(iso: string): string {
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return "";
