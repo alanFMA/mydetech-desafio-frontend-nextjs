@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { Sidebar } from "@/components/layout/sidebar";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 
 const geist = Geist({
@@ -44,7 +45,12 @@ export default function RootLayout({
                         enableSystem
                         disableTransitionOnChange
                     >
-                        {children}
+                        <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+                            <Sidebar />
+                            <main className="flex-1 flex flex-col h-full relative min-w-0 overflow-hidden">
+                                {children}
+                            </main>
+                        </div>
                     </ThemeProvider>
                 </Providers>
             </body>
