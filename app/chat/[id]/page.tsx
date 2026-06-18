@@ -65,10 +65,21 @@ export default function ChatPage() {
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "Escape") {
-                router.push("/");
-                (document.activeElement as HTMLElement | null)?.blur();
+            if (e.key !== "Escape") return;
+
+            const target = e.target as HTMLElement | null;
+            const isEditing =
+                target?.tagName === "INPUT" ||
+                target?.tagName === "TEXTAREA" ||
+                target?.isContentEditable;
+
+            if (isEditing) {
+                target?.blur();
+                return;
             }
+
+            router.push("/");
+            (document.activeElement as HTMLElement | null)?.blur();
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
